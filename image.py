@@ -148,8 +148,11 @@ class Image:
 
     def replace_color(self, old: Color, new: Color) -> None:
         """ Change the color of the pixels of a certain color. """
-        mask = (self.array[:, :, :3] == old[:3]).all(axis=2)
+        mask = (self.array[:, :, :len(old)] == old[:len(old)]).all(axis=2)
         mask = mask.reshape(mask.shape + (1,))
+        if len(new) == 3:
+            new = np.full(self.array.shape, new + (255,))
+            new[:, :, -1] = self.array[:, :, -1]
         rgba = np.where(mask, new, self.array)
         self.array = np.asarray(rgba, dtype="uint8")
 
@@ -159,7 +162,7 @@ class Image:
             mask = self.array[:, :, :3] < (255 - increasing)
             self.array[:, :, :3] = np.where(mask, self.array[:, :, :3] + increasing, 255)
         elif increasing < 0:
-            mask = self.array[:, :, :3] > increasing
+            mask = self.array[:, :, :3] > -increasing
             self.array[:, :, :3] = np.where(mask, self.array[:, :, :3] + increasing, 0)
 
     def show(self) -> None:
